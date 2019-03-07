@@ -6,8 +6,31 @@
   "repository": "https://github.com/alexvcasillas/react-onboarding.git",
   "author": "Alex Casillas <@alexvcasillas>",
   "license": "MIT",
-  "dependencies": {
+  "scripts": {
+    "rollup": "rollup -c",
+    "prepare": "yarn rollup",
+    "prepare:dev": "yarn rollup -w",
+    "demo": "parcel demo/index.html --out-dir parcel"
+  },
+  "peerDependencies": {
+    "prop-types": "^15.7.2",
     "react": "^16.8.2",
+    "react-dom": "^16.8.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.3.3",
+    "@babel/plugin-proposal-class-properties": "^7.3.3",
+    "@babel/plugin-transform-react-jsx": "^7.3.0",
+    "parcel": "^1.11.0",
+    "rollup": "^1.2.2",
+    "rollup-plugin-babel": "^4.3.2",
+    "rollup-plugin-filesize": "^6.0.1",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-replace": "^2.1.0",
+    "rollup-plugin-terser": "^4.0.4"
+  },
+  "dependencies": {
+    "react": "^16.0.0",
     "react-dom": "^16.8.2"
   }
 }
