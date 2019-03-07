@@ -26446,7 +26446,100 @@ if ("development" !== 'production') {
   // http://fb.me/prop-types-in-prod
   module.exports = require('./factoryWithThrowingShims')();
 }
-},{"react-is":"../node_modules/react-is/index.js","./factoryWithTypeCheckers":"../node_modules/prop-types/factoryWithTypeCheckers.js"}],"../dist/react-onboarding.js":[function(require,module,exports) {
+},{"react-is":"../node_modules/react-is/index.js","./factoryWithTypeCheckers":"../node_modules/prop-types/factoryWithTypeCheckers.js"}],"../node_modules/uuid/lib/rng-browser.js":[function(require,module,exports) {
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+
+// getRandomValues needs to be invoked in a context where "this" is a Crypto
+// implementation. Also, find the complete implementation of crypto on IE11.
+var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto)) ||
+                      (typeof(msCrypto) != 'undefined' && typeof window.msCrypto.getRandomValues == 'function' && msCrypto.getRandomValues.bind(msCrypto));
+
+if (getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+
+  module.exports = function whatwgRNG() {
+    getRandomValues(rnds8);
+    return rnds8;
+  };
+} else {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+
+  module.exports = function mathRNG() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+},{}],"../node_modules/uuid/lib/bytesToUuid.js":[function(require,module,exports) {
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
+  return ([bth[buf[i++]], bth[buf[i++]], 
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]], '-',
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]],
+	bth[buf[i++]], bth[buf[i++]]]).join('');
+}
+
+module.exports = bytesToUuid;
+
+},{}],"../node_modules/uuid/v4.js":[function(require,module,exports) {
+var rng = require('./lib/rng');
+var bytesToUuid = require('./lib/bytesToUuid');
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options === 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rng)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid(rnds);
+}
+
+module.exports = v4;
+
+},{"./lib/rng":"../node_modules/uuid/lib/rng-browser.js","./lib/bytesToUuid":"../node_modules/uuid/lib/bytesToUuid.js"}],"../dist/react-onboarding.js":[function(require,module,exports) {
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -26498,19 +26591,95 @@ function _defineProperty(obj, key, value) {
   return obj;
 }
 
+function OnboardingService() {
+  var tree = {};
+
+  function setStep(step) {
+    console.log('setStep: ', step);
+    if (tree[step]) return;
+    tree[step] = {};
+  }
+
+  function setField(field, step) {
+    console.log('setField: ', field, step);
+
+    if (typeof tree[step] === 'undefined') {
+      setStep(step);
+    }
+
+    tree[step][field] = null;
+  }
+
+  function setFieldValue(field, step, value) {
+    console.log('setFieldValue: ', field, step, value);
+    if (typeof tree[step] === 'undefined' || typeof tree[step][field] === 'undefined') return;
+    tree[step][field] = value;
+  }
+
+  return {
+    tree: tree,
+    setStep: setStep,
+    setField: setField,
+    setFieldValue: setFieldValue
+  };
+}
+
+var onboardingService = OnboardingService();
 var STEP_TYPE_KEY = 'Step';
+var FIELD_TYPE_KEY = 'Field';
+
+var uuid = require('uuid/v4');
+/**
+ * PUBLIC
+ * This function calculates the number of steps that
+ * are present in an Array of React Components.
+ * This will only count the first level of steps due to
+ * there's no reason for a step to be within a step.
+ * @param {Array} tree
+ */
+
 
 function calculateNumberOfSteps(tree) {
   return tree.filter(function (leaf) {
     return leaf.type.name === STEP_TYPE_KEY;
   }).length;
 }
+/**
+ * PUBLIC
+ * This function enhaces a step (React Object) with
+ * some required internal data to make the system work
+ * as expected.
+ * @param {Object} step
+ * @param {Object} enhancements
+ */
+
 
 function enhanceStep(step) {
   var enhancements = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  if (step.type.name !== STEP_TYPE_KEY) ;
+  if (step.type.name !== STEP_TYPE_KEY) return step;
   return _objectSpread({}, step, {
+    key: uuid(),
     props: _objectSpread({}, step.props, {
+      __enhancements: enhancements
+    })
+  });
+}
+/**
+ * PUBLIC
+ * This function enhaces a field (React Object) with
+ * some required internal data to make the system work
+ * as expected.
+ * @param {Object} step
+ * @param {Object} enhancements
+ */
+
+
+function enhanceField(field) {
+  var enhancements = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  if (field.type.name !== FIELD_TYPE_KEY) return field;
+  return _objectSpread({}, field, {
+    key: uuid(),
+    props: _objectSpread({}, field.props, {
       __enhancements: enhancements
     })
   });
@@ -26531,11 +26700,6 @@ function (_React$Component) {
     _classCallCheck(this, Onboarding);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Onboarding).call(this, props));
-
-    _defineProperty(_assertThisInitialized(_this), "onOnboardingComplete", function () {
-      var onOnboardingComplete = _this.props.onOnboardingComplete;
-      onOnboardingComplete();
-    });
 
     _defineProperty(_assertThisInitialized(_this), "nextStep", function () {
       var currentStep = _this.state.currentStep; // Check if we want to move beyond the last step
@@ -26566,6 +26730,9 @@ function (_React$Component) {
         encounteredStep = encounteredStep + 1;
         return false;
       }).map(function (child) {
+        if (child.type.name !== STEP_TYPE_KEY) return child;
+        var snaked_name = child.props.name.replace(/-/gi, '_');
+        onboardingService.setStep(snaked_name);
         return enhanceStep(child, {
           nextStep: _this.nextStep
         });
@@ -26582,13 +26749,20 @@ function (_React$Component) {
   }
 
   _createClass(Onboarding, [{
+    key: "shouldComponentUpdate",
+    value: function shouldComponentUpdate(nextProps, nextState) {
+      var currentStep = this.state.currentStep;
+      return currentStep !== nextState.currentStep;
+    }
+  }, {
     key: "render",
     value: function render() {
       var currentStep = this.state.currentStep;
       return React.createElement(Provider, {
         value: {
           numberOfSteps: this.numberOfSteps,
-          currentStep: currentStep + 1
+          currentStep: currentStep + 1,
+          onboarding: onboardingService.tree
         }
       }, this.onboardingRenderer());
     }
@@ -26606,26 +26780,35 @@ var Step =
 function (_React$Component2) {
   _inherits(Step, _React$Component2);
 
-  function Step() {
+  function Step(props) {
+    var _this2;
+
     _classCallCheck(this, Step);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(Step).apply(this, arguments));
+    _this2 = _possibleConstructorReturn(this, _getPrototypeOf(Step).call(this, props));
+
+    _defineProperty(_assertThisInitialized(_this2), "stepRenderer", function () {
+      var _this2$props = _this2.props,
+          children = _this2$props.children,
+          stepName = _this2$props.name,
+          nextStep = _this2$props.__enhancements.nextStep;
+      var prerenderedChildren = children({
+        nextStep: nextStep
+      }).props.children;
+      return prerenderedChildren.map(function (child) {
+        return enhanceField(child, {
+          step: stepName.replace(/-/gi, '_')
+        });
+      });
+    });
+
+    return _this2;
   }
 
   _createClass(Step, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {}
-  }, {
     key: "render",
     value: function render() {
-      var _this$props = this.props,
-          children = _this$props.children,
-          nextStep = _this$props.__enhancements.nextStep,
-          __lastStep = _this$props.__lastStep;
-      return React.createElement(React.Fragment, null, children({
-        nextStep: nextStep,
-        lastStep: __lastStep
-      }) || null);
+      return this.stepRenderer();
     }
   }]);
 
@@ -26633,6 +26816,7 @@ function (_React$Component2) {
 }(React.Component);
 
 Step.propTypes = {
+  name: PropTypes.string.isRequired,
   __enhancements: PropTypes.shape({
     nextStep: PropTypes.func.isRequired
   })
@@ -26667,17 +26851,44 @@ var Field =
 function (_React$Component4) {
   _inherits(Field, _React$Component4);
 
-  function Field() {
+  function Field(props) {
+    var _this3;
+
     _classCallCheck(this, Field);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(Field).apply(this, arguments));
+    _this3 = _possibleConstructorReturn(this, _getPrototypeOf(Field).call(this, props));
+
+    _defineProperty(_assertThisInitialized(_this3), "onChange", function (e) {
+      onboardingService.setFieldValue(_this3.snaked_name, _this3.step, e.target.value);
+
+      _this3.setState({
+        value: e.target.value
+      });
+    });
+
+    var step = _this3.props.__enhancements.step;
+    _this3.snaked_name = props.name.replace(/-/gi, '_');
+    _this3.step = step;
+    onboardingService.setField(_this3.snaked_name, step);
+    _this3.state = {
+      type: props.type,
+      value: ''
+    };
+    return _this3;
   }
 
   _createClass(Field, [{
     key: "render",
     value: function render() {
       var children = this.props.children;
-      return children || null;
+      var _this$state = this.state,
+          type = _this$state.type,
+          value = _this$state.value;
+      return children({
+        value: value,
+        type: type,
+        onChange: this.onChange
+      });
     }
   }]);
 
@@ -26692,7 +26903,7 @@ exports.Info = Consumer;
 exports.Step = Step;
 exports.Fieldset = Fieldset;
 exports.Field = Field;
-},{"react":"../node_modules/react/index.js","prop-types":"../node_modules/prop-types/index.js"}],"app.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","prop-types":"../node_modules/prop-types/index.js","uuid/v4":"../node_modules/uuid/v4.js"}],"app.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -26758,21 +26969,59 @@ function (_React$Component) {
 
       return _react.default.createElement(_react.default.Fragment, null, _react.default.createElement(_reactOnboarding.Onboarding, null, _react.default.createElement(_reactOnboarding.Info, null, function (_ref) {
         var currentStep = _ref.currentStep,
-            numberOfSteps = _ref.numberOfSteps;
-        return _react.default.createElement("header", null, currentStep, " of ", numberOfSteps);
-      }), _react.default.createElement(_reactOnboarding.Step, null, function (_ref2) {
+            numberOfSteps = _ref.numberOfSteps,
+            onboarding = _ref.onboarding;
+        return _react.default.createElement(_react.default.Fragment, null, _react.default.createElement("header", null, currentStep, " of ", numberOfSteps));
+      }), _react.default.createElement(_reactOnboarding.Step, {
+        name: "full-name"
+      }, function (_ref2) {
         var nextStep = _ref2.nextStep;
-        return _react.default.createElement(_react.default.Fragment, null, _react.default.createElement(_reactOnboarding.Fieldset, null, _react.default.createElement(_reactOnboarding.Field, null, "Field 1 @ Step 1", _react.default.createElement("input", {
-          type: "text",
-          placeholder: "Name"
-        }))), _react.default.createElement(_reactOnboarding.Fieldset, null, _react.default.createElement(_reactOnboarding.Field, null, "Field 2 @ Step 1", _react.default.createElement("input", {
-          type: "text",
-          placeholder: "Last name"
-        }))), _react.default.createElement("button", {
+        return _react.default.createElement(_react.default.Fragment, null, _react.default.createElement(_reactOnboarding.Field, {
+          name: "name",
+          type: "text"
+        }, function (_ref3) {
+          var type = _ref3.type,
+              value = _ref3.value,
+              onChange = _ref3.onChange;
+          return _react.default.createElement("input", {
+            type: type,
+            placeholder: "Name",
+            value: value,
+            onChange: onChange
+          });
+        }), _react.default.createElement(_reactOnboarding.Field, {
+          name: "last-name",
+          type: "text"
+        }, function (_ref4) {
+          var type = _ref4.type,
+              value = _ref4.value,
+              onChange = _ref4.onChange;
+          return _react.default.createElement("input", {
+            type: type,
+            placeholder: "Last name",
+            value: value,
+            onChange: onChange
+          });
+        }), _react.default.createElement("button", {
           onClick: nextStep
         }, "Next Step"));
-      }), _react.default.createElement(_reactOnboarding.Step, null, function () {
-        return _react.default.createElement(_react.default.Fragment, null, _react.default.createElement(_reactOnboarding.Fieldset, null, _react.default.createElement(_reactOnboarding.Field, null, "Field 1 @ Step 2")), _react.default.createElement("button", {
+      }), _react.default.createElement(_reactOnboarding.Step, {
+        name: "aditional-details"
+      }, function () {
+        return _react.default.createElement(_react.default.Fragment, null, _react.default.createElement(_reactOnboarding.Field, {
+          name: "email",
+          type: "email"
+        }, function (_ref5) {
+          var type = _ref5.type,
+              value = _ref5.value,
+              onChange = _ref5.onChange;
+          return _react.default.createElement("input", {
+            type: type,
+            placeholder: "Email",
+            value: value,
+            onChange: onChange
+          });
+        }), _react.default.createElement("button", {
           onClick: _this2.onOnboardingComplete
         }, "Complete!"));
       })));
@@ -26823,7 +27072,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56472" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60717" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);

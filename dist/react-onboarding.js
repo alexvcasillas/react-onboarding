@@ -22,15 +22,90 @@ function _defineProperty(obj, key, value) {
   return obj;
 }
 
+function OnboardingService() {
+  const tree = {};
+
+  function setStep(step) {
+    console.log('setStep: ', step);
+    if (tree[step]) return;
+    tree[step] = {};
+  }
+
+  function setField(field, step) {
+    console.log('setField: ', field, step);
+
+    if (typeof tree[step] === 'undefined') {
+      setStep(step);
+    }
+
+    tree[step][field] = null;
+  }
+
+  function setFieldValue(field, step, value) {
+    console.log('setFieldValue: ', field, step, value);
+    if (typeof tree[step] === 'undefined' || typeof tree[step][field] === 'undefined') return;
+    tree[step][field] = value;
+  }
+
+  return {
+    tree,
+    setStep,
+    setField,
+    setFieldValue
+  };
+}
+
+const onboardingService = OnboardingService();
+
 const STEP_TYPE_KEY = 'Step';
+const FIELD_TYPE_KEY = 'Field';
+
+const uuid = require('uuid/v4');
+/**
+ * PUBLIC
+ * This function calculates the number of steps that
+ * are present in an Array of React Components.
+ * This will only count the first level of steps due to
+ * there's no reason for a step to be within a step.
+ * @param {Array} tree
+ */
+
 
 function calculateNumberOfSteps(tree) {
   return tree.filter(leaf => leaf.type.name === STEP_TYPE_KEY).length;
 }
+/**
+ * PUBLIC
+ * This function enhaces a step (React Object) with
+ * some required internal data to make the system work
+ * as expected.
+ * @param {Object} step
+ * @param {Object} enhancements
+ */
+
 function enhanceStep(step, enhancements = {}) {
-  if (step.type.name !== STEP_TYPE_KEY) ;
+  if (step.type.name !== STEP_TYPE_KEY) return step;
   return { ...step,
+    key: uuid(),
     props: { ...step.props,
+      __enhancements: enhancements
+    }
+  };
+}
+/**
+ * PUBLIC
+ * This function enhaces a field (React Object) with
+ * some required internal data to make the system work
+ * as expected.
+ * @param {Object} step
+ * @param {Object} enhancements
+ */
+
+function enhanceField(field, enhancements = {}) {
+  if (field.type.name !== FIELD_TYPE_KEY) return field;
+  return { ...field,
+    key: uuid(),
+    props: { ...field.props,
       __enhancements: enhancements
     }
   };
@@ -44,13 +119,6 @@ const {
 class Onboarding extends React.Component {
   constructor(props) {
     super(props);
-
-    _defineProperty(this, "onOnboardingComplete", () => {
-      const {
-        onOnboardingComplete
-      } = this.props;
-      onOnboardingComplete();
-    });
 
     _defineProperty(this, "nextStep", () => {
       const {
@@ -84,6 +152,9 @@ class Onboarding extends React.Component {
         encounteredStep = encounteredStep + 1;
         return false;
       }).map(child => {
+        if (child.type.name !== STEP_TYPE_KEY) return child;
+        const snaked_name = child.props.name.replace(/-/gi, '_');
+        onboardingService.setStep(snaked_name);
         return enhanceStep(child, {
           nextStep: this.nextStep
         });
@@ -98,6 +169,13 @@ class Onboarding extends React.Component {
     this.numberOfSteps = calculateNumberOfSteps(props.children);
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    const {
+      currentStep
+    } = this.state;
+    return currentStep !== nextState.currentStep;
+  }
+
   render() {
     const {
       currentStep
@@ -105,7 +183,8 @@ class Onboarding extends React.Component {
     return React.createElement(Provider, {
       value: {
         numberOfSteps: this.numberOfSteps,
-        currentStep: currentStep + 1
+        currentStep: currentStep + 1,
+        onboarding: onboardingService.tree
       }
     }, this.onboardingRenderer());
   }
@@ -118,25 +197,36 @@ Onboarding.propTypes = {
  // export default Onboarding;
 
 class Step extends React.Component {
-  componentDidMount() {}
+  constructor(props) {
+    super(props);
+
+    _defineProperty(this, "stepRenderer", () => {
+      const {
+        children,
+        name: stepName,
+        __enhancements: {
+          nextStep
+        }
+      } = this.props;
+      const prerenderedChildren = children({
+        nextStep
+      }).props.children;
+      return prerenderedChildren.map(child => {
+        return enhanceField(child, {
+          step: stepName.replace(/-/gi, '_')
+        });
+      });
+    });
+  }
 
   render() {
-    const {
-      children,
-      __enhancements: {
-        nextStep
-      },
-      __lastStep
-    } = this.props;
-    return React.createElement(React.Fragment, null, children({
-      nextStep,
-      lastStep: __lastStep
-    }) || null);
+    return this.stepRenderer();
   }
 
 }
 
 Step.propTypes = {
+  name: PropTypes.string.isRequired,
   __enhancements: PropTypes.shape({
     nextStep: PropTypes.func.isRequired
   })
@@ -155,11 +245,43 @@ class Fieldset extends React.Component {
 Fieldset.propTypes = {};
 
 class Field extends React.Component {
+  constructor(props) {
+    super(props);
+
+    _defineProperty(this, "onChange", e => {
+      onboardingService.setFieldValue(this.snaked_name, this.step, e.target.value);
+      this.setState({
+        value: e.target.value
+      });
+    });
+
+    const {
+      __enhancements: {
+        step
+      }
+    } = this.props;
+    this.snaked_name = props.name.replace(/-/gi, '_');
+    this.step = step;
+    onboardingService.setField(this.snaked_name, step);
+    this.state = {
+      type: props.type,
+      value: ''
+    };
+  }
+
   render() {
     const {
       children
     } = this.props;
-    return children || null;
+    const {
+      type,
+      value
+    } = this.state;
+    return children({
+      value,
+      type,
+      onChange: this.onChange
+    });
   }
 
 }

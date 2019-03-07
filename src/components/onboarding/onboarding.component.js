@@ -1,7 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { stepsFromTree, enhanceStep, calculateNumberOfSteps } from '../../core/index.core';
+import { OnboardingService } from '../../core/services/core.service';
+
+import { enhanceStep, calculateNumberOfSteps } from '../../core/index.core';
 import { STEP_TYPE_KEY } from '../../core/constants';
 
 const { Provider, Consumer } = React.createContext();
@@ -16,11 +18,6 @@ class Onboarding extends React.Component {
     this.numberOfSteps = calculateNumberOfSteps(props.children);
   }
 
-  onOnboardingComplete = () => {
-    const { onOnboardingComplete } = this.props;
-    onOnboardingComplete();
-  };
-
   nextStep = () => {
     const { currentStep } = this.state;
     // Check if we want to move beyond the last step
@@ -30,6 +27,11 @@ class Onboarding extends React.Component {
       currentStep: prevState.currentStep + 1,
     }));
   };
+
+  shouldComponentUpdate(nextProps, nextState) {
+    const { currentStep } = this.state;
+    return currentStep !== nextState.currentStep;
+  }
 
   onboardingRenderer = () => {
     const { children } = this.props;
@@ -49,6 +51,9 @@ class Onboarding extends React.Component {
         return false;
       })
       .map(child => {
+        if (child.type.name !== STEP_TYPE_KEY) return child;
+        const snaked_name = child.props.name.replace(/-/gi, '_');
+        OnboardingService.setStep(snaked_name);
         return enhanceStep(child, {
           nextStep: this.nextStep,
         });
@@ -59,7 +64,9 @@ class Onboarding extends React.Component {
   render() {
     const { currentStep } = this.state;
     return (
-      <Provider value={{ numberOfSteps: this.numberOfSteps, currentStep: currentStep + 1 }}>
+      <Provider
+        value={{ numberOfSteps: this.numberOfSteps, currentStep: currentStep + 1, onboarding: OnboardingService.tree }}
+      >
         {this.onboardingRenderer()}
       </Provider>
     );

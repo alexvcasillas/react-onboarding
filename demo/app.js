@@ -11,37 +11,39 @@ class App extends React.Component {
       <>
         <Onboarding>
           <Info>
-            {({ currentStep, numberOfSteps }) => (
-              <header>
-                {currentStep} of {numberOfSteps}
-              </header>
+            {({ currentStep, numberOfSteps, onboarding }) => (
+              <>
+                <header>
+                  {currentStep} of {numberOfSteps}
+                </header>
+              </>
             )}
           </Info>
-          <Step>
+          <Step name="full-name">
             {({ nextStep }) => (
               <>
-                <Fieldset>
-                  <Field>
-                    Field 1 @ Step 1
-                    <input type="text" placeholder="Name" />
-                  </Field>
-                </Fieldset>
-                <Fieldset>
-                  <Field>
-                    Field 2 @ Step 1
-                    <input type="text" placeholder="Last name" />
-                  </Field>
-                </Fieldset>
+                <Field name="name" type="text">
+                  {({ type, value, onChange }) => (
+                    <input type={type} placeholder="Name" value={value} onChange={onChange} />
+                  )}
+                </Field>
+                <Field name="last-name" type="text">
+                  {({ type, value, onChange }) => (
+                    <input type={type} placeholder="Last name" value={value} onChange={onChange} />
+                  )}
+                </Field>
                 <button onClick={nextStep}>Next Step</button>
               </>
             )}
           </Step>
-          <Step>
+          <Step name="aditional-details">
             {() => (
               <>
-                <Fieldset>
-                  <Field>Field 1 @ Step 2</Field>
-                </Fieldset>
+                <Field name="email" type="email">
+                  {({ type, value, onChange }) => (
+                    <input type={type} placeholder="Email" value={value} onChange={onChange} />
+                  )}
+                </Field>
                 <button onClick={this.onOnboardingComplete}>Complete!</button>
               </>
             )}
