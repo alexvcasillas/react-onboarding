@@ -17,12 +17,31 @@ class Step extends React.Component {
       name: stepName,
       __enhancements: { nextStep, prevStep },
     } = this.props;
-    const prerenderedChildren = children({ nextStep, prevStep }).props.children;
-    return prerenderedChildren.map(child => {
-      return enhanceField(child, {
-        step: snakeCase(stepName),
-      });
-    });
+    const stepContents = children({ nextStep, prevStep });
+    // Here we check if we have multiple childs for this step or a single one
+    if (Array.isArray(stepContents.props.children)) {
+      // Children comes in the flavor of array so we have to map over to
+      // enhance any of those who's a Field
+      return {
+        ...stepContents,
+        props: {
+          children: stepContents.props.children.map(child => {
+            return enhanceField(child, {
+              step: snakeCase(stepName),
+            });
+          }),
+        },
+      };
+    } else {
+      // Children comes in the flavor or an object so we don't have to
+      // map over and just enhace the children in case it's a Field
+      return {
+        ...stepContents,
+        props: {
+          children: enhanceField(stepContents.props.children, { step: snakeCase(stepName) }),
+        },
+      };
+    }
   };
 
   render() {

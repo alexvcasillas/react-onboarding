@@ -91,7 +91,13 @@ class Onboarding extends React.Component {
     const { currentStep } = this.state;
     return (
       <Provider
-        value={{ numberOfSteps: this.numberOfSteps, currentStep: currentStep + 1, onboarding: OnboardingService.tree }}
+        value={{
+          numberOfSteps: this.numberOfSteps,
+          currentStep: currentStep + 1,
+          onboarding: OnboardingService.tree,
+          prevStep: this.prevStep,
+          nextStep: this.nextStep,
+        }}
       >
         {this.onboardingRenderer()}
       </Provider>
