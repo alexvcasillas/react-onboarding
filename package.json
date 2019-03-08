@@ -6,7 +6,7 @@
   "module": "dist/react-onboarding.module.js",
   "browser": "dist/react-onboarding.umd.js",
   "repository": "https://github.com/alexvcasillas/react-onboarding.git",
-  "author": "Alex Casillas <@alexvcasillas>",
+  "author": "Alex Casillas <alexvcasillas@gmail.com> (https://alexvcasillas.com)",
   "license": "MIT",
   "scripts": {
     "rollup": "rollup -c",
