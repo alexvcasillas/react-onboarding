@@ -81,4 +81,5 @@ typings/
 
 # Demo Stuff
 demo
+dist
 parcel
