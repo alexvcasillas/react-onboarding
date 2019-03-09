@@ -1,11 +1,5 @@
 {
-  "plugins": [
-    "@babel/plugin-proposal-class-properties",
-    [
-      "@babel/plugin-transform-react-jsx",
-      {
-        "pragmaFrag": "React.Fragment"
-      }
-    ]
-  ]
+  "presets": [["@babel/preset-env"], "@babel/preset-react"],
+  "plugins": ["@babel/plugin-proposal-class-properties"],
+  "ignore": ["node_modules/**"]
 }
