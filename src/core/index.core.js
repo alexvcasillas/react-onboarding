@@ -77,7 +77,6 @@ export function enhanceField(field, enhancements = {}) {
   if (field.type.name !== FIELD_TYPE_KEY) return field;
   return {
     ...field,
-    key: uuid(),
     props: {
       ...field.props,
       __enhancements: enhancements,
