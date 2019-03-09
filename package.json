@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "react": "^16.0.0",
-    "react-dom": "^16.8.2",
-    "uuid": "^3.3.2"
+    "react-dom": "^16.8.2"
   }
 }

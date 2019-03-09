@@ -23,6 +23,24 @@ class Step extends React.Component {
   setValidStep = isValid => this.setState({ validStep: isValid });
   setProcessed = processed => this.setState({ processed });
 
+  componentDidMount() {
+    /**
+     * NOTE
+     * To be able to have optional steps
+     * we have to check if some of the children have validations attached
+     * this way. A step, by default has an unprocessed state (!processed)
+     * meaning that the user have to provide some input. By checking if
+     * the child have validations we could declare this step as processed beforehand
+     * so we can click next without having to provide any input
+     */
+    const {
+      props: { children: stepContents },
+    } = this.props.children({ nextStep: () => {}, prevStep: () => {}, validStep: true });
+    const someHaveValidations = stepContents.some(child => child.props.validations);
+    if (someHaveValidations) return;
+    this.setState({ processed: true });
+  }
+
   stepRenderer = () => {
     const {
       children,
@@ -36,7 +54,11 @@ class Step extends React.Component {
      * next step function is setted to an empty function that
      * returns null to prevent the user to move to next step
      */
-    const stepContents = children({ nextStep: processed ? nextStep : () => null, prevStep, validStep });
+    const stepContents = children({
+      nextStep: processed ? nextStep : () => null,
+      prevStep,
+      validStep: validStep && processed ? true : false,
+    });
     // Here we check if we have multiple childs for this step or a single one
     if (Array.isArray(stepContents.props.children)) {
       // Children comes in the flavor of array so we have to map over to

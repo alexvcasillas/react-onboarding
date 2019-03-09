@@ -8,7 +8,7 @@ class Field extends React.Component {
     super(props);
     // Get Step name from enhancements
     const {
-      __enhancements: { step },
+      __enhancements: { step, setProcessed },
     } = this.props;
     // Snake case the name and set it
     this.snaked_name = snakeCase(props.name);
@@ -38,14 +38,27 @@ class Field extends React.Component {
         const { validations = [] } = this.props;
         // Check if this field has validations
         if (validations.length !== 0) {
-          const onChangeValidation = validations.find(validation => validation.on === 'change');
-          if (onChangeValidation) {
-            const {
-              __enhancements: { setValidStep },
-            } = this.props;
-            const validationOk = onChangeValidation.validator(value);
-            if (!validationOk) this.setState({ valid: false, error: onChangeValidation.errorMessage });
-            setValidStep(validationOk);
+          const onChangeValidations = validations.filter(validation => validation.on === 'change');
+          if (onChangeValidations) {
+            /**
+             * NOTE
+             * We would like to stop running validations of we
+             * already have a validation that has failed
+             * that's why we're using a for-loop instead of a forEach.
+             */
+            let alreadyErrored = false;
+            for (let i = 0; i < onChangeValidations.length && !alreadyErrored; i++) {
+              const {
+                __enhancements: { setValidStep },
+              } = this.props;
+              const validationOk = onChangeValidations[i].validator(value);
+              if (!validationOk) {
+                this.setState({ valid: false, error: onChangeValidations[i].errorMessage });
+                // Raise the flag so we stop running the loop
+                alreadyErrored = true;
+              }
+              setValidStep(validationOk);
+            }
           }
         }
         setProcessed(true);
@@ -62,14 +75,27 @@ class Field extends React.Component {
         const { validations = [] } = this.props;
         // Check if this field has validations
         if (validations.length !== 0) {
-          const onFocusValidation = validations.find(validation => validation.on === 'focus');
-          if (onFocusValidation) {
-            const {
-              __enhancements: { setValidStep },
-            } = this.props;
-            const validationOk = onFocusValidation.validator(value);
-            if (!validationOk) this.setState({ valid: false, error: onFocusValidation.errorMessage });
-            setValidStep(validationOk);
+          const onFocusValidations = validations.filter(validation => validation.on === 'focus');
+          if (onFocusValidations) {
+            /**
+             * NOTE
+             * We would like to stop running validations of we
+             * already have a validation that has failed
+             * that's why we're using a for-loop instead of a forEach.
+             */
+            let alreadyErrored = false;
+            for (let i = 0; i < onFocusValidations.length && !alreadyErrored; i++) {
+              const {
+                __enhancements: { setValidStep },
+              } = this.props;
+              const validationOk = onFocusValidations[i].validator(value);
+              if (!validationOk) {
+                this.setState({ valid: false, error: onFocusValidations[i].errorMessage });
+                // Raise the flag so we stop running the loop
+                alreadyErrored = true;
+              }
+              setValidStep(validationOk);
+            }
           }
         }
       },
@@ -85,15 +111,27 @@ class Field extends React.Component {
         const { validations = [] } = this.props;
         // Check if this field has validations
         if (validations.length !== 0) {
-          const onBlurValidation = validations.find(validation => validation.on === 'blur');
-          if (onBlurValidation) {
-            const {
-              __enhancements: { setValidStep },
-            } = this.props;
-            const validationOk = onBlurValidation.validator(value);
-            console.log({ validationOk });
-            if (!validationOk) this.setState({ valid: false, error: onBlurValidation.errorMessage });
-            setValidStep(validationOk);
+          const onBlurValidations = validations.filter(validation => validation.on === 'blur');
+          if (onBlurValidations) {
+            /**
+             * NOTE
+             * We would like to stop running validations of we
+             * already have a validation that has failed
+             * that's why we're using a for-loop instead of a forEach.
+             */
+            let alreadyErrored = false;
+            for (let i = 0; i < onBlurValidations.length && !alreadyErrored; i++) {
+              const {
+                __enhancements: { setValidStep },
+              } = this.props;
+              const validationOk = onBlurValidations[i].validator(value);
+              if (!validationOk) {
+                this.setState({ valid: false, error: onBlurValidations[i].errorMessage });
+                // Raise the flag so we stop running the loop
+                alreadyErrored = true;
+              }
+              setValidStep(validationOk);
+            }
           }
         }
       },
