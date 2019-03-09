@@ -1,6 +1,6 @@
 {
   "name": "@reactive-labs/onboarding",
-  "version": "0.0.1-alpha.2",
+  "version": "0.0.1-alpha.3",
   "description": "Onboarding library for React",
   "main": "dist/react-onboarding.js",
   "module": "dist/react-onboarding.module.js",
