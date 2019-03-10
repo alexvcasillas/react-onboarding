@@ -1,11 +1,26 @@
 import { STEP_TYPE_KEY, FIELD_TYPE_KEY } from './constants';
 
-type ReactEnhancedObject = {
-  [x: string]: any;
-  props: {
-    [x: string]: any;
-    __enhancements: any;
-  };
+export type StepEnhancements = {
+  nextStep: Function;
+  prevStep: Function;
+  validStep?: boolean;
+};
+
+export type EnhancedStep = JSX.Element & {
+  nextStep: Function;
+  prevStep: Function;
+};
+
+export type FieldEnhancements = {
+  step: string;
+  setProcessed: Function;
+  setValidStep: Function;
+};
+
+export type EnhancedField = JSX.Element & {
+  step: string;
+  setProcessed: Function;
+  setValidStep: Function;
 };
 
 /**
@@ -16,8 +31,11 @@ type ReactEnhancedObject = {
  * there's no reason for a step to be within a step.
  * @param {Array} tree
  */
-export function calculateNumberOfSteps(tree: Array<ReactEnhancedObject>) {
-  return tree.filter(leaf => leaf.type.name === STEP_TYPE_KEY).length;
+export function calculateNumberOfSteps(tree: JSX.Element[] | JSX.Element): number {
+  if (Array.isArray(tree)) {
+    return tree.filter((leaf: JSX.Element) => leaf.type.name === STEP_TYPE_KEY).length;
+  }
+  return tree.type.name === STEP_TYPE_KEY ? 1 : 0;
 }
 /**
  * PUBLIC
@@ -27,7 +45,7 @@ export function calculateNumberOfSteps(tree: Array<ReactEnhancedObject>) {
  * @param {Object} step
  * @param {Object} enhancements
  */
-export function enhanceStep(step: ReactEnhancedObject, enhancements: object = {}): object {
+export function enhanceStep(step: JSX.Element, enhancements: StepEnhancements): JSX.Element | EnhancedStep {
   if (step.type.name !== STEP_TYPE_KEY) return step;
   return {
     ...step,
@@ -46,7 +64,7 @@ export function enhanceStep(step: ReactEnhancedObject, enhancements: object = {}
  * @param {Object} step
  * @param {Object} enhancements
  */
-export function enhanceField(field: ReactEnhancedObject, enhancements: object = {}): object {
+export function enhanceField(field: JSX.Element, enhancements: FieldEnhancements): JSX.Element | EnhancedField {
   if (field.type.name !== FIELD_TYPE_KEY) return field;
   return {
     ...field,

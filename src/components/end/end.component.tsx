@@ -1,18 +1,23 @@
 import React from 'react';
 
-import { OnboardingService } from '../../core/services/core.service';
+import { OnboardingService, Tree } from '../../core/services/core.service';
 
-class End extends React.Component {
+type Props = {
+  children: Function;
+};
+type State = {
+  tree: Tree;
+};
+
+class End extends React.Component<Props, State> {
   state = {
-    ...OnboardingService.tree,
+    tree: { ...OnboardingService.tree },
   };
 
   render() {
-    const { children } = this.props;
-    return children(this.state);
+    const children: Function = this.props.children;
+    return children(this.state.tree);
   }
 }
-
-End.propTypes = {};
 
 export default End;

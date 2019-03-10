@@ -1,11 +1,21 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { enhanceField } from '../../core/index.core';
+import { enhanceField, StepEnhancements } from '../../core/index.core';
 import { OnboardingService } from '../../core/services/core.service';
 import { snakeCase } from '../../core/utils';
 
-class Step extends React.Component {
-  constructor(props) {
+type Props = {
+  name: string;
+  conversational: boolean;
+  children: (props: StepEnhancements) => JSX.Element;
+  __enhancements: StepEnhancements;
+};
+type State = {
+  validStep: boolean;
+  processed: boolean;
+};
+
+class Step extends React.Component<Props, State> {
+  constructor(props: Readonly<Props>) {
     super(props);
     const snaked_name = snakeCase(props.name);
     OnboardingService.setStep(snaked_name);
@@ -16,12 +26,12 @@ class Step extends React.Component {
      * meaning that, it won't have any fields or validations so,
      * this step should be processed and valid by default.
      */
-    const conversational = props.conversational;
+    const conversational: boolean = props.conversational;
     this.state = { validStep: true, processed: conversational ? true : false };
   }
 
-  setValidStep = isValid => this.setState({ validStep: isValid });
-  setProcessed = processed => this.setState({ processed });
+  setValidStep = (isValid: boolean): void => this.setState({ validStep: isValid });
+  setProcessed = (processed: boolean): void => this.setState({ processed });
 
   componentDidMount() {
     /**
@@ -36,12 +46,12 @@ class Step extends React.Component {
     const {
       props: { children: stepContents },
     } = this.props.children({ nextStep: () => {}, prevStep: () => {}, validStep: true });
-    const someHaveValidations = stepContents.some(child => child.props.validations);
+    const someHaveValidations = stepContents.some((child: JSX.Element) => child.props.validations);
     if (someHaveValidations) return;
     this.setState({ processed: true });
   }
 
-  stepRenderer = () => {
+  stepRenderer = (): JSX.Element => {
     const {
       children,
       name: stepName,
@@ -95,13 +105,5 @@ class Step extends React.Component {
     return this.stepRenderer();
   }
 }
-
-Step.propTypes = {
-  name: PropTypes.string.isRequired,
-  __enhancements: PropTypes.shape({
-    nextStep: PropTypes.func.isRequired,
-    prevStep: PropTypes.func.isRequired,
-  }),
-};
 
 export default Step;

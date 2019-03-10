@@ -1,14 +1,37 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { OnboardingService } from '../../core/services/core.service';
 import { snakeCase } from '../../core/utils';
+import { FieldEnhancements } from '../../core/index.core';
 
-class Field extends React.Component {
-  constructor(props) {
+type Validation = {
+  name: string;
+  on: string;
+  validator: Function;
+  errorMessage: string;
+};
+
+type Props = {
+  __enhancements: FieldEnhancements;
+  validations: Validation[];
+  name: string;
+  type: string;
+  children: (props: any) => JSX.Element;
+};
+
+type State = {
+  value: string;
+  valid: boolean;
+  error: string;
+};
+
+class Field extends React.Component<Props, State> {
+  step: string;
+  snaked_name: string;
+  constructor(props: Props) {
     super(props);
     // Get Step name from enhancements
     const {
-      __enhancements: { step, setProcessed },
+      __enhancements: { step },
     } = this.props;
     // Snake case the name and set it
     this.snaked_name = snakeCase(props.name);
@@ -152,17 +175,5 @@ class Field extends React.Component {
     });
   }
 }
-
-Field.propTypes = {
-  title: PropTypes.string,
-  validations: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string,
-      validator: PropTypes.func,
-      on: PropTypes.oneOf(['change', 'blur', 'focus']),
-      errorMessage: PropTypes.string,
-    }),
-  ),
-};
 
 export default Field;
