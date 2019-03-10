@@ -1,4 +1,13 @@
 import { STEP_TYPE_KEY, FIELD_TYPE_KEY } from './constants';
+
+type ReactEnhancedObject = {
+  [x: string]: any;
+  props: {
+    [x: string]: any;
+    __enhancements: any;
+  };
+};
+
 /**
  * PUBLIC
  * This function calculates the number of steps that
@@ -7,7 +16,7 @@ import { STEP_TYPE_KEY, FIELD_TYPE_KEY } from './constants';
  * there's no reason for a step to be within a step.
  * @param {Array} tree
  */
-export function calculateNumberOfSteps(tree) {
+export function calculateNumberOfSteps(tree: Array<ReactEnhancedObject>) {
   return tree.filter(leaf => leaf.type.name === STEP_TYPE_KEY).length;
 }
 /**
@@ -18,7 +27,7 @@ export function calculateNumberOfSteps(tree) {
  * @param {Object} step
  * @param {Object} enhancements
  */
-export function enhanceStep(step, enhancements = {}) {
+export function enhanceStep(step: ReactEnhancedObject, enhancements: object = {}): object {
   if (step.type.name !== STEP_TYPE_KEY) return step;
   return {
     ...step,
@@ -37,7 +46,7 @@ export function enhanceStep(step, enhancements = {}) {
  * @param {Object} step
  * @param {Object} enhancements
  */
-export function enhanceField(field, enhancements = {}) {
+export function enhanceField(field: ReactEnhancedObject, enhancements: object = {}): object {
   if (field.type.name !== FIELD_TYPE_KEY) return field;
   return {
     ...field,

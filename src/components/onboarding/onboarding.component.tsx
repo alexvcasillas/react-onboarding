@@ -6,10 +6,21 @@ import { OnboardingService } from '../../core/services/core.service';
 import { enhanceStep, calculateNumberOfSteps } from '../../core/index.core';
 import { STEP_TYPE_KEY, END_TYPE_KEY } from '../../core/constants';
 
-const { Provider, Consumer } = React.createContext();
+const { Provider, Consumer } = React.createContext({});
 
-class Onboarding extends React.Component {
-  constructor(props) {
+type OnboardingProps = {
+  initialStep: number;
+  [x: string]: any;
+};
+type OnboardingState = {
+  initialStep: number;
+  currentStep: number;
+};
+
+class Onboarding extends React.Component<OnboardingProps, OnboardingState> {
+  state: OnboardingState;
+  numberOfSteps: number;
+  constructor(props: OnboardingProps) {
     super(props);
     this.state = {
       initialStep: props.initialStep || 0,
@@ -38,7 +49,7 @@ class Onboarding extends React.Component {
     }));
   };
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps: OnboardingProps, nextState: OnboardingState) {
     const { currentStep } = this.state;
     const { finished } = this.props;
     return currentStep !== nextState.currentStep || finished !== nextProps.finished;

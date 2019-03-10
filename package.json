@@ -9,14 +9,15 @@
   "author": "Alex Casillas <alexvcasillas@gmail.com> (https://alexvcasillas.com)",
   "license": "MIT",
   "scripts": {
-    "build": "microbundle",
-    "dev": "microbundle watch"
+    "build": "microbundle --jsx react",
+    "dev": "microbundle watch --jsx react"
   },
-  "peerDependencies": {
+  "dependencies": {
     "prop-types": "^15.7.2",
     "react": "^16.8.2"
   },
   "devDependencies": {
+    "@types/react": "^16.8.7",
     "microbundle": "^0.11.0"
   }
 }
