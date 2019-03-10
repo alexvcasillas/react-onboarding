@@ -83,3 +83,8 @@ typings/
 demo
 dist
 parcel
+
+# RTS2 Cache
+.rts2_cache_cjs
+.rts2_cache_es
+.rts2_cache_umd
