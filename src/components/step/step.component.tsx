@@ -29,7 +29,7 @@ class Step extends React.Component<Props, State> {
      * this step should be processed and valid by default.
      */
     const conversational: boolean = props.conversational;
-    this.state = { validStep: true, processed: conversational ? true : false };
+    this.state = { validStep: false, processed: conversational ? true : false };
   }
 
   setValidStep = (isValid: boolean): void => this.setState({ validStep: isValid });
@@ -50,7 +50,7 @@ class Step extends React.Component<Props, State> {
     } = this.props.children({ nextStep: () => {}, prevStep: () => {}, validStep: true });
     const someHaveValidations = stepContents.some((child: JSX.Element) => child.props.validations);
     if (someHaveValidations) return;
-    this.setState({ processed: true });
+    this.setState({ validStep: true, processed: true });
   }
 
   stepRenderer = (): JSX.Element => {

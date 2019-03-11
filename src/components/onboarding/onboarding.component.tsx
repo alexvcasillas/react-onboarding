@@ -26,7 +26,6 @@ class Onboarding extends React.Component<Props, State> {
       currentStep: props.initialStep || 0,
     };
     this.numberOfSteps = calculateNumberOfSteps(props.children);
-    console.log(this.numberOfSteps);
   }
 
   nextStep = (): void => {
