@@ -1,3 +1,4 @@
+import { Children } from 'react';
 import { STEP_TYPE_KEY, FIELD_TYPE_KEY } from './constants';
 
 export type StepEnhancements = {
@@ -32,10 +33,10 @@ export type EnhancedField = JSX.Element & {
  * @param {Array} tree
  */
 export function calculateNumberOfSteps(tree: JSX.Element[] | JSX.Element): number {
-  if (Array.isArray(tree)) {
-    return tree.filter((leaf: JSX.Element) => leaf.type.name === STEP_TYPE_KEY).length;
-  }
-  return tree.type.name === STEP_TYPE_KEY ? 1 : 0;
+  return Children.map(tree, leaf => {
+    if (leaf.type.__type === STEP_TYPE_KEY) return leaf;
+    return;
+  }).length;
 }
 /**
  * PUBLIC
@@ -46,7 +47,8 @@ export function calculateNumberOfSteps(tree: JSX.Element[] | JSX.Element): numbe
  * @param {Object} enhancements
  */
 export function enhanceStep(step: JSX.Element, enhancements: StepEnhancements): JSX.Element | EnhancedStep {
-  if (step.type.name !== STEP_TYPE_KEY) return step;
+  const type = step.type.__type;
+  if (type !== STEP_TYPE_KEY) return step;
   return {
     ...step,
     key: step.props.name,
@@ -65,7 +67,8 @@ export function enhanceStep(step: JSX.Element, enhancements: StepEnhancements): 
  * @param {Object} enhancements
  */
 export function enhanceField(field: JSX.Element, enhancements: FieldEnhancements): JSX.Element | EnhancedField {
-  if (field.type.name !== FIELD_TYPE_KEY) return field;
+  const type = field.type.__type;
+  if (type !== FIELD_TYPE_KEY) return field;
   return {
     ...field,
     key: field.props.name,

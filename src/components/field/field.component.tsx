@@ -1,7 +1,8 @@
-import React from 'react';
+import * as React from 'react';
 import { OnboardingService } from '../../core/services/core.service';
 import { snakeCase } from '../../core/utils';
 import { FieldEnhancements } from '../../core/index.core';
+import { FIELD_TYPE_KEY } from '../../core/constants';
 
 type Validation = {
   name: string;
@@ -10,12 +11,22 @@ type Validation = {
   errorMessage: string;
 };
 
+type FieldHanders = {
+  value: string;
+  type: string;
+  onChange: Function;
+  onBlur: Function;
+  onFocus: Function;
+  error: string;
+  valid: boolean;
+};
+
 type Props = {
   __enhancements: FieldEnhancements;
   validations: Validation[];
   name: string;
   type: string;
-  children: (props: any) => JSX.Element;
+  children: (props: FieldHanders) => JSX.Element;
 };
 
 type State = {
@@ -175,5 +186,8 @@ class Field extends React.Component<Props, State> {
     });
   }
 }
+
+// @ts-ignore
+Field.__type = FIELD_TYPE_KEY;
 
 export default Field;

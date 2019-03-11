@@ -1,7 +1,8 @@
-import React from 'react';
+import * as React from 'react';
 import { enhanceField, StepEnhancements } from '../../core/index.core';
 import { OnboardingService } from '../../core/services/core.service';
 import { snakeCase } from '../../core/utils';
+import { STEP_TYPE_KEY } from '../../core/constants';
 
 type Props = {
   name: string;
@@ -15,6 +16,7 @@ type State = {
 };
 
 class Step extends React.Component<Props, State> {
+  step: string;
   constructor(props: Readonly<Props>) {
     super(props);
     const snaked_name = snakeCase(props.name);
@@ -66,7 +68,7 @@ class Step extends React.Component<Props, State> {
      */
     const stepContents = children({
       nextStep: processed ? nextStep : () => null,
-      prevStep,
+      prevStep: prevStep ? prevStep : () => null,
       validStep: validStep && processed ? true : false,
     });
     // Here we check if we have multiple childs for this step or a single one
@@ -76,7 +78,7 @@ class Step extends React.Component<Props, State> {
       return {
         ...stepContents,
         props: {
-          children: stepContents.props.children.map(child => {
+          children: stepContents.props.children.map((child: JSX.Element) => {
             return enhanceField(child, {
               step: snakeCase(stepName),
               setValidStep: this.setValidStep,
@@ -105,5 +107,8 @@ class Step extends React.Component<Props, State> {
     return this.stepRenderer();
   }
 }
+
+// @ts-ignore
+Step.__type = STEP_TYPE_KEY;
 
 export default Step;

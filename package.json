@@ -1,6 +1,6 @@
 {
   "name": "@reactive-labs/onboarding",
-  "version": "0.0.1-alpha.12",
+  "version": "0.0.1-alpha.13",
   "description": "Onboarding library for React",
   "main": "dist/react-onboarding.js",
   "umd:main": "dist/react-onboarding.umd.js",
@@ -13,7 +13,6 @@
     "dev": "microbundle watch --jsx react"
   },
   "dependencies": {
-    "prop-types": "^15.7.2",
     "react": "^16.8.4"
   },
   "devDependencies": {

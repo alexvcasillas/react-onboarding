@@ -79,11 +79,6 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
-# Demo Stuff
-demo
-dist
-parcel
-
 # RTS2 Cache
 .rts2_cache_cjs
 .rts2_cache_es

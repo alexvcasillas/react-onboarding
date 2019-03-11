@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 
 import { OnboardingService } from '../../core/services/core.service';
 
@@ -26,6 +26,7 @@ class Onboarding extends React.Component<Props, State> {
       currentStep: props.initialStep || 0,
     };
     this.numberOfSteps = calculateNumberOfSteps(props.children);
+    console.log(this.numberOfSteps);
   }
 
   nextStep = (): void => {
@@ -59,51 +60,29 @@ class Onboarding extends React.Component<Props, State> {
     const { currentStep } = this.state;
     let encounteredStep = 0;
     let stepFound = false;
-    if (Array.isArray(children)) {
-      const extendedChildrens: JSX.Element[] = children
-        .filter((child: JSX.Element) => {
-          // Is this child not an object (React Component | DOM Element) type? We don't want it then
-          // This is due to certain stuff like: {!onboardingComplete && <header>Onboarding process</header>}
-          // The described code above will make the children be literally false when !onboardingComplete
-          // This way we can skip trying to render a false value
-          if (typeof child !== 'object') return false;
-          // Is the form not finished and we're trying to render the end component?
-          if (!finished && child.type.name === END_TYPE_KEY) return false;
-          // Is the form not finished and we're trying to render anything but a step or and end component?
-          if (!finished && child.type.name !== END_TYPE_KEY && child.type.name !== STEP_TYPE_KEY) return true;
-          // Is the form not finished and we're trying to render a step?
-          if (!finished && child.type.name === STEP_TYPE_KEY) {
-            // Is this the step we would like to render?
-            if (encounteredStep === currentStep && !stepFound) {
-              // Yes, this is the step we would like to render
-              stepFound = true; // Raise the flag
-              return true; // Return this step
-            }
-            // If it's not, increase the counter to check for next step
-            encounteredStep = encounteredStep + 1;
-            // Do not return this component
-            return false;
-          }
-          // Is the form finished and we're trying to render anything but a step?
-          if (finished && child.type.name !== STEP_TYPE_KEY) return true;
-        })
-        .map((child: JSX.Element) => {
-          if (child.type.name !== STEP_TYPE_KEY) return child;
-          // Enhance the step with the nextStep & prevStep functions
+    const elements = React.Children.map(children, (child: JSX.Element, i: number) => {
+      // Somehow, there could be childs that are null
+      // Maybe related to {onboardingComplete && (<component></component>)} expressions
+      // We have to skip those null child since we don't want to render them
+      if (!child) return;
+      const type = child.type.__type;
+      if (!type) return child;
+      if (!finished && type === END_TYPE_KEY) return;
+      if (!finished && type !== END_TYPE_KEY && type !== STEP_TYPE_KEY) return child;
+      if (!finished && type === STEP_TYPE_KEY) {
+        if (encounteredStep === currentStep && !stepFound) {
+          stepFound = true;
           return enhanceStep(child, {
             nextStep: this.nextStep,
             prevStep: this.prevStep,
           });
-        });
-      return extendedChildrens;
-    }
-    // Check if it's not a step and return it
-    if (children.type.name !== STEP_TYPE_KEY) return children;
-    // Return the enhanced step
-    return enhanceStep(children, {
-      nextStep: this.nextStep,
-      prevStep: this.prevStep,
+        }
+        encounteredStep = encounteredStep + 1;
+        return;
+      }
+      if (finished && type !== STEP_TYPE_KEY) return child;
     });
+    return elements;
   };
 
   render() {
