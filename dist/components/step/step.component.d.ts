@@ -16,7 +16,7 @@ declare class Step extends React.Component<Props, State> {
     setValidStep: (isValid: boolean) => void;
     setProcessed: (processed: boolean) => void;
     componentDidMount(): void;
-    stepRenderer: () => JSX.Element;
-    render(): JSX.Element;
+    stepRenderer: () => JSX.Element | JSX.Element[];
+    render(): JSX.Element | JSX.Element[];
 }
 export default Step;

@@ -4,12 +4,14 @@ import { STEP_TYPE_KEY, FIELD_TYPE_KEY } from './constants';
 export type StepEnhancements = {
   nextStep: Function;
   prevStep: Function;
+  finish: Function;
   validStep?: boolean;
 };
 
 export type EnhancedStep = JSX.Element & {
   nextStep: Function;
   prevStep: Function;
+  finish: Function;
 };
 
 export type FieldEnhancements = {

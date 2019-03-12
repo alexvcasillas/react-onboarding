@@ -8,12 +8,14 @@ declare type Props = {
 declare type State = {
     initialStep: number;
     currentStep: number;
+    finished: boolean;
 };
 declare class Onboarding extends React.Component<Props, State> {
     numberOfSteps: number;
     constructor(props: Readonly<Props>);
     nextStep: () => void;
     prevStep: () => void;
+    finishForm: () => void;
     shouldComponentUpdate(nextProps: Props, nextState: State): boolean;
     onboardingRenderer: () => JSX.Element | JSX.Element[];
     render(): JSX.Element;

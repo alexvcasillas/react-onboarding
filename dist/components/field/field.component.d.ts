@@ -12,6 +12,7 @@ declare type FieldHanders = {
     onChange: Function;
     onBlur: Function;
     onFocus: Function;
+    onEnter: Function;
     error: string;
     valid: boolean;
 };
@@ -31,9 +32,10 @@ declare class Field extends React.Component<Props, State> {
     step: string;
     snaked_name: string;
     constructor(props: Props);
-    onChange: (value: any) => void;
-    onFocus: () => void;
-    onBlur: () => void;
+    onChange: (value: string) => Promise<any>;
+    onFocus: () => Promise<any>;
+    onBlur: () => Promise<any>;
+    onEnter: (enterCallback: Function) => void;
     render(): JSX.Element;
 }
 export default Field;

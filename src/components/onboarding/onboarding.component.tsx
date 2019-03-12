@@ -15,6 +15,7 @@ type Props = {
 type State = {
   initialStep: number;
   currentStep: number;
+  finished: boolean;
 };
 
 class Onboarding extends React.Component<Props, State> {
@@ -24,6 +25,7 @@ class Onboarding extends React.Component<Props, State> {
     this.state = {
       initialStep: props.initialStep || 0,
       currentStep: props.initialStep || 0,
+      finished: false,
     };
     this.numberOfSteps = calculateNumberOfSteps(props.children);
   }
@@ -48,38 +50,52 @@ class Onboarding extends React.Component<Props, State> {
     }));
   };
 
+  finishForm = (): void => {
+    this.setState({ finished: true });
+  };
+
   shouldComponentUpdate(nextProps: Props, nextState: State) {
-    const { currentStep } = this.state;
-    const { finished } = this.props;
-    return currentStep !== nextState.currentStep || finished !== nextProps.finished;
+    const { currentStep, finished } = this.state;
+    return currentStep !== nextState.currentStep || finished !== nextState.finished;
   }
 
   onboardingRenderer = (): JSX.Element | JSX.Element[] => {
-    const { children, finished } = this.props;
-    const { currentStep } = this.state;
+    const { children } = this.props;
+    const { currentStep, finished } = this.state;
     let encounteredStep = 0;
     let stepFound = false;
-    const elements = React.Children.map(children, (child: JSX.Element, i: number) => {
+    let processedSteps = [];
+    const elements = React.Children.map(children, (child: JSX.Element) => {
       // Somehow, there could be childs that are null
       // Maybe related to {onboardingComplete && (<component></component>)} expressions
       // We have to skip those null child since we don't want to render them
       if (!child) return;
       const type = child.type.__type;
-      if (!type) return child;
+      // Components that are not type STEP or END
+      // didn't have a TYPE_KEY so we could have ended
+      // with a end page with aditional unwanted components
+      if (!finished && !type) return child;
       if (!finished && type === END_TYPE_KEY) return;
       if (!finished && type !== END_TYPE_KEY && type !== STEP_TYPE_KEY) return child;
       if (!finished && type === STEP_TYPE_KEY) {
+        // Check to avoid duplicated step identifiers
+        if (processedSteps.includes(child.props.name)) {
+          throw new Error(`You have defined a duplicated step. ${child.props.name} step has already been defined.`);
+        }
+        processedSteps = [...processedSteps, child.props.name];
         if (encounteredStep === currentStep && !stepFound) {
           stepFound = true;
           return enhanceStep(child, {
             nextStep: this.nextStep,
             prevStep: this.prevStep,
+            finish: this.finishForm,
           });
         }
         encounteredStep = encounteredStep + 1;
         return;
       }
-      if (finished && type !== STEP_TYPE_KEY) return child;
+      if (finished && type !== END_TYPE_KEY) return;
+      if (finished && type === END_TYPE_KEY) return child;
     });
     return elements;
   };
@@ -94,6 +110,7 @@ class Onboarding extends React.Component<Props, State> {
           onboarding: OnboardingService.tree,
           prevStep: this.prevStep,
           nextStep: this.nextStep,
+          finish: this.finishForm,
         }}
       >
         {this.onboardingRenderer()}

@@ -2,11 +2,13 @@
 export declare type StepEnhancements = {
     nextStep: Function;
     prevStep: Function;
+    finish: Function;
     validStep?: boolean;
 };
 export declare type EnhancedStep = JSX.Element & {
     nextStep: Function;
     prevStep: Function;
+    finish: Function;
 };
 export declare type FieldEnhancements = {
     step: string;

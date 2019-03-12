@@ -2,7 +2,7 @@ import * as React from 'react';
 import { enhanceField, StepEnhancements } from '../../core/index.core';
 import { OnboardingService } from '../../core/services/core.service';
 import { snakeCase } from '../../core/utils';
-import { STEP_TYPE_KEY } from '../../core/constants';
+import { STEP_TYPE_KEY, FIELD_TYPE_KEY } from '../../core/constants';
 
 type Props = {
   name: string;
@@ -20,7 +20,10 @@ class Step extends React.Component<Props, State> {
   constructor(props: Readonly<Props>) {
     super(props);
     const snaked_name = snakeCase(props.name);
-    OnboardingService.setStep(snaked_name);
+    // Only not conversational steps are going to be setted
+    if (!props.conversational) {
+      OnboardingService.setStep(snaked_name);
+    }
     /**
      * NOTE
      * There's a special step type: the conversational step
@@ -29,7 +32,7 @@ class Step extends React.Component<Props, State> {
      * this step should be processed and valid by default.
      */
     const conversational: boolean = props.conversational;
-    this.state = { validStep: false, processed: conversational ? true : false };
+    this.state = { validStep: true, processed: conversational ? true : false };
   }
 
   setValidStep = (isValid: boolean): void => this.setState({ validStep: isValid });
@@ -47,60 +50,49 @@ class Step extends React.Component<Props, State> {
      */
     const {
       props: { children: stepContents },
-    } = this.props.children({ nextStep: () => {}, prevStep: () => {}, validStep: true });
+    } = this.props.children({ nextStep: () => {}, prevStep: () => {}, finish: () => {}, validStep: true });
     const someHaveValidations = stepContents.some((child: JSX.Element) => child.props.validations);
     if (someHaveValidations) return;
-    this.setState({ validStep: true, processed: true });
+    this.setState({ processed: true });
   }
 
-  stepRenderer = (): JSX.Element => {
+  stepRenderer = (): JSX.Element | JSX.Element[] => {
     const {
       children,
       name: stepName,
-      __enhancements: { nextStep, prevStep },
+      __enhancements: { nextStep, prevStep, finish },
     } = this.props;
     const { validStep, processed } = this.state;
     /**
      * NOTE
-     * If the status of this form is invalid (!validStep), the
+     * If the status of this form is not processed, the
      * next step function is setted to an empty function that
      * returns null to prevent the user to move to next step
      */
     const stepContents = children({
       nextStep: processed ? nextStep : () => null,
       prevStep: prevStep ? prevStep : () => null,
-      validStep: validStep && processed ? true : false,
+      finish: processed ? finish : () => null,
+      validStep: validStep,
     });
-    // Here we check if we have multiple childs for this step or a single one
-    if (Array.isArray(stepContents.props.children)) {
-      // Children comes in the flavor of array so we have to map over to
-      // enhance any of those who's a Field
-      return {
-        ...stepContents,
-        props: {
-          children: stepContents.props.children.map((child: JSX.Element) => {
+
+    return {
+      ...stepContents,
+      props: {
+        children: React.Children.map(stepContents.props.children, (child: JSX.Element) => {
+          if (!child) return;
+          const type = child.type.__type;
+          if (type === FIELD_TYPE_KEY) {
             return enhanceField(child, {
               step: snakeCase(stepName),
               setValidStep: this.setValidStep,
               setProcessed: this.setProcessed,
             });
-          }),
-        },
-      };
-    } else {
-      // Children comes in the flavor or an object so we don't have to
-      // map over and just enhace the children in case it's a Field
-      return {
-        ...stepContents,
-        props: {
-          children: enhanceField(stepContents.props.children, {
-            step: snakeCase(stepName),
-            setValidStep: this.setValidStep,
-            setProcessed: this.setProcessed,
-          }),
-        },
-      };
-    }
+          }
+          return child;
+        }),
+      },
+    };
   };
 
   render() {
