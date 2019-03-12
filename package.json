@@ -1,6 +1,6 @@
 {
   "name": "@reactive-labs/onboarding",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Onboarding library for React",
   "main": "dist/react-onboarding.js",
   "umd:main": "dist/react-onboarding.umd.js",
