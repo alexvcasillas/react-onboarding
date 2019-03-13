@@ -1,6 +1,7 @@
-### Onboarding
+# Onboarding
 
 - [Motivation](#motivation)
+- [Demo](#demo)
 - [Why Onboarding?](#why-onboarding)
 - [What Onboarding is not](#what-onboarding-is-not)
 - [Installation](#installation)
@@ -13,6 +14,14 @@ TLDR; **Onboarding** is an open source library that aims to create a robust onbo
 After working for long days building onboarding applications for clients and companies and their clients; having to build almost the same over and over again but adapting the logic for each of the use cases, I though that maybe we could have some generic solution easy to import in whatever project we're working on and being able to easily declare specific onboarding logics like validations and related stuff, that's why this project started taking shape and became what's nowdays: **Onboarding**.
 
 We also knew that the user would like to use any UI component library so we have to develop **Onboarding** as generic as possible and providing the enough abstractions to link the internal logic of this library with the logic of a UI component, like field statuses, triggers, event handlers, etc. This way we came up with a, as much as generic as we could, solution. We developed some components that will provide you with the logic needed to build the onboarding process. Using this components should be as simple and straightforward as to put them into your React application without doing any configurations or other related stuff. We tried to keep things as simple as possible within some reasonable React limitations.
+
+# Demo
+
+If you would like to take a look at what **Onboarding** could do for you, you should take a look at this demo:
+
+Reactive Labs demo | [https://onboarding-demo.reactive-labs.com/](https://onboarding-demo.reactive-labs.com/)
+
+If you've created some open-source project that relies on **Onboarding** and would like to showcase your project here, feel free to send a PR with the link to your website/demo.
 
 # Why Onboarding?
 
