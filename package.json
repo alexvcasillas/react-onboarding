@@ -1,5 +1,5 @@
 {
-  "name": "@reactive-labs/onboarding",
+  "name": "@alexvcasillas/onboarding",
   "version": "0.3.0",
   "description": "Onboarding library for React",
   "main": "dist/index.js",
