@@ -7,7 +7,7 @@ export const End = ({
 }: {
   children: ({ result }: { result: object }) => React.ReactNode;
 }): React.ReactNode => {
-  return children({ result: OnboardingService.tree });
+  return children({ result: OnboardingService.getResult() });
 };
 
 End.__type = END_TYPE_KEY;
