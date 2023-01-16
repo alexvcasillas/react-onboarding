@@ -12,10 +12,12 @@ interface IOnboardingService {
 
 function OnboardingService(): IOnboardingService {
   const tree = {};
+
   function setStep(step) {
     if (tree[step]) return;
     tree[step] = {};
   }
+
   function setField(field, step) {
     if (typeof tree[step] === 'undefined') {
       setStep(step);
@@ -24,14 +26,25 @@ function OnboardingService(): IOnboardingService {
     if (tree[step][field]) return;
     tree[step][field] = '';
   }
+
   function setFieldValue(field, step, value) {
-    if (typeof tree[step] === 'undefined' || typeof tree[step][field] === 'undefined') return;
+    if (
+      typeof tree[step] === 'undefined' ||
+      typeof tree[step][field] === 'undefined'
+    )
+      return;
     tree[step][field] = value;
   }
+
   function getFieldValue(field, step) {
-    if (typeof tree[step] === 'undefined' || typeof tree[step][field] === 'undefined') return '';
+    if (
+      typeof tree[step] === 'undefined' ||
+      typeof tree[step][field] === 'undefined'
+    )
+      return '';
     return tree[step][field];
   }
+
   return {
     tree,
     setStep,

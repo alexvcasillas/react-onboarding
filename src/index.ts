@@ -1,1 +1,1 @@
-export * from './components';
+export { Onboarding, Step, Field, End } from './components';

@@ -1,30 +1,30 @@
 import { Children } from 'react';
 import { STEP_TYPE_KEY, FIELD_TYPE_KEY } from './constants';
 
-export type StepEnhancements = {
+export interface StepEnhancements {
   nextStep: Function;
   prevStep: Function;
   finish: Function;
   validStep?: boolean;
-};
+}
 
-export type EnhancedStep = JSX.Element & {
+export interface EnhancedStep extends JSX.Element {
   nextStep: Function;
   prevStep: Function;
   finish: Function;
-};
+}
 
-export type FieldEnhancements = {
+export interface FieldEnhancements {
   step: string;
   setProcessed: Function;
   setValidStep: Function;
-};
+}
 
-export type EnhancedField = JSX.Element & {
+export interface EnhancedField extends JSX.Element {
   step: string;
   setProcessed: Function;
   setValidStep: Function;
-};
+}
 
 /**
  * PUBLIC
@@ -34,8 +34,10 @@ export type EnhancedField = JSX.Element & {
  * there's no reason for a step to be within a step.
  * @param {Array} tree
  */
-export function calculateNumberOfSteps(tree: JSX.Element[] | JSX.Element): number {
-  return Children.map(tree, leaf => {
+export function calculateNumberOfSteps(
+  tree: JSX.Element[] | JSX.Element,
+): number {
+  return Children.map(tree, (leaf) => {
     if (leaf.type.__type === STEP_TYPE_KEY) return leaf;
     return;
   }).length;
@@ -48,7 +50,10 @@ export function calculateNumberOfSteps(tree: JSX.Element[] | JSX.Element): numbe
  * @param {Object} step
  * @param {Object} enhancements
  */
-export function enhanceStep(step: JSX.Element, enhancements: StepEnhancements): JSX.Element | EnhancedStep {
+export function enhanceStep(
+  step: JSX.Element,
+  enhancements: StepEnhancements,
+): JSX.Element | EnhancedStep {
   const type = step.type.__type;
   if (type !== STEP_TYPE_KEY) return step;
   return {
@@ -68,7 +73,10 @@ export function enhanceStep(step: JSX.Element, enhancements: StepEnhancements): 
  * @param {Object} step
  * @param {Object} enhancements
  */
-export function enhanceField(field: JSX.Element, enhancements: FieldEnhancements): JSX.Element | EnhancedField {
+export function enhanceField(
+  field: JSX.Element,
+  enhancements: FieldEnhancements,
+): JSX.Element | EnhancedField {
   const type = field.type.__type;
   if (type !== FIELD_TYPE_KEY) return field;
   return {
