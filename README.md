@@ -36,13 +36,13 @@ Currently there are formidable solutions in the React ecosystem to handle form's
 NPM
 
 ```
-npm i --save @reactive-labs/onboarding
+npm i --save @alexvcasillas/react-onboarding
 ```
 
 Yarn
 
 ```
-yarn add @reactive-labs/onboarding
+yarn add @alexvcasillas/react-onboarding
 ```
 
 # Onboarding components
@@ -60,7 +60,7 @@ yarn add @reactive-labs/onboarding
 The Onboarding Component is what you'll need at the top-level of your application. It's that one that will be in charge of handling the Step generations and dealing with rendering Steps, Infos, End components and rending everything that's not related to a particular step or end page.
 
 ```
-import { Onboarding } from '@reactive-labs/onboarding';
+import { Onboarding } from '@alexvcasillas/react-onboarding';
 
 <Onboarding>
   ...
@@ -74,7 +74,7 @@ It won't take any props so you just drop it there and it will start working out 
 The Step component is what you will have to include within an Onboarding component to tell the system that you would want a step to be rendered and therefore, displayed in the browser.
 
 ```
-import { Step } from '@reactive-labs/onboarding';
+import { Step } from '@alexvcasillas/react-onboarding';
 
 <Step name="user-details">
   {({ nextStep, prevStep, validStep, finish }) => (
@@ -107,7 +107,7 @@ As you can see, the Step component is a component that takes a function as a chi
 The Field component is what you will have to include within a Field component to tell the system that this is a field that could have validations attached to them to deal with your business logic.
 
 ```
-import { Step } from '@reactive-labs/onboarding';
+import { Step } from '@alexvcasillas/react-onboarding';
 
 <Field name="email" type="email" validations={}>
   {({ type, value, onChange, onFocus, onBlur, onEnter, valid, error }) => (
@@ -116,7 +116,7 @@ import { Step } from '@reactive-labs/onboarding';
 </Field>
 ```
 
-The field component that's various props as:
+The field component has various props as:
 
 - name
   - type: String
